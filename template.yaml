@@ -1,0 +1,157 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Complete order processing system with validation, inventory checks, order completion, notifications, and error handling.
+
+Resources:
+  # API Gateway for Order Submission
+  OrderApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: OrderAPI
+      StageName: Prod
+      Cors:
+        AllowMethods: "'OPTIONS,POST'"
+        AllowHeaders: "'Content-Type'"
+        AllowOrigin: "'*'"
+
+  # EventBridge for Coordination
+  OrderEventBus:
+    Type: AWS::Events::EventBus
+    Properties:
+      Name: OrderEventBus
+
+  # DynamoDB Table for Order Status
+  OrderStatusTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: OrderStatus
+      AttributeDefinitions:
+        - AttributeName: OrderId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: OrderId
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  # SQS Queues for Decoupling
+  ValidOrderQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ValidOrderQueue
+
+  OrderValidationDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: OrderValidationDLQ
+
+  OrderProcessorDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: OrderProcessorDLQ
+
+  # Lambda: Order Validation
+  OrderValidationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: order_validation.lambda_handler
+      Runtime: python3.9
+      CodeUri: ./src
+      MemorySize: 128
+      Timeout: 15
+      Environment:
+        Variables:
+          EVENT_BUS_NAME: !Ref OrderEventBus
+          VALID_ORDER_QUEUE: !Ref ValidOrderQueue
+          INVALID_ORDER_DLQ: !Ref OrderValidationDLQ
+      Policies:
+        - Statement:
+            Effect: Allow
+            Action:
+              - "events:PutEvents"
+            Resource: !Sub "arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${OrderEventBus}"
+        - SQSFullAccess
+      DeadLetterQueue:
+        Type: SQS
+        TargetArn: !GetAtt OrderValidationDLQ.Arn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref OrderApiGateway
+            Path: /order
+            Method: POST
+
+  # Lambda: Inventory Processor
+  InventoryProcessorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: inventory_handler.lambda_handler
+      Runtime: python3.9
+      CodeUri: ./src
+      MemorySize: 128
+      Timeout: 15
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Ref OrderStatusTable
+          EVENT_BUS_NAME: !Ref OrderEventBus
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref OrderStatusTable
+        - Statement:
+            Effect: Allow
+            Action:
+              - "events:PutEvents"
+            Resource: !Sub "arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${OrderEventBus}"
+      DeadLetterQueue:
+        Type: SQS
+        TargetArn: !GetAtt OrderProcessorDLQ.Arn
+
+  # Lambda: Order Completion
+  OrderCompletionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: completion_handler.lambda_handler
+      Runtime: python3.9
+      CodeUri: ./src
+      MemorySize: 128
+      Timeout: 15
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: !Ref OrderStatusTable
+          EVENT_BUS_NAME: !Ref OrderEventBus
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref OrderStatusTable
+        - Statement:
+            Effect: Allow
+            Action:
+              - "events:PutEvents"
+            Resource: !Sub "arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${OrderEventBus}"
+
+  # Lambda: Notification
+  NotificationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: notification_handler.lambda_handler
+      Runtime: python3.9
+      CodeUri: ./src
+      MemorySize: 128
+      Timeout: 10
+      Environment:
+        Variables:
+          SNS_TOPIC_ARN: !Ref OrderNotificationTopic
+      Policies:
+        - SNSPublishMessagePolicy:
+            TopicName: !Ref OrderNotificationTopic
+
+  # SNS Topic for Notifications
+  OrderNotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: OrderNotificationTopic
+
+Outputs:
+  OrderApiUrl:
+    Value: !Sub "https://${OrderApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/order"
+    Description: URL for the Order API
