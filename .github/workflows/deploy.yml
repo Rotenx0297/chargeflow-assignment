@@ -1,19 +1,20 @@
 name: Deploy SAM Stack
 
-# on:
-#   push:
-#     branches:
-#       - main
-
+on:
+  # push:
+  #   branches:
+  #     - main
+  workflow_dispatch:
+    inputs:
+      aws-region:
+        description: 'The AWS region'
+        required: true
+        default: 'us-east-1'
 jobs:
   deploy:
     name: Deploy SAM Stack to AWS
     runs-on: ubuntu-latest
-    inputs:
-      aws-region:
-        description: "The AWS region"
-        required: true
-        default: "us-east-1"
+
     steps:
     - name: Checkout Code
       uses: actions/checkout@v3
