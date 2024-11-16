@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  Complete order processing system with validation, inventory checks, order completion, notifications, and error handling.
+  Complete order processing system
 
 Resources:
   # API Gateway for Order Submission
@@ -70,7 +70,19 @@ Resources:
             Action:
               - "events:PutEvents"
             Resource: !Sub "arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${OrderEventBus}"
-        - SQSFullAccess
+        - Statement:
+            Effect: Allow
+            Action:
+              - "sqs:SendMessage"
+              - "sqs:ReceiveMessage"
+              - "sqs:DeleteMessage"
+              - "sqs:GetQueueAttributes"
+            Resource: !GetAtt ValidOrderQueue.Arn
+        - Statement:
+            Effect: Allow
+            Action:
+              - "sqs:SendMessage"
+            Resource: !GetAtt OrderValidationDLQ.Arn
       DeadLetterQueue:
         Type: SQS
         TargetArn: !GetAtt OrderValidationDLQ.Arn
@@ -103,6 +115,14 @@ Resources:
             Action:
               - "events:PutEvents"
             Resource: !Sub "arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${OrderEventBus}"
+        - Statement:
+            Effect: Allow
+            Action:
+              - "sqs:SendMessage"
+              - "sqs:ReceiveMessage"
+              - "sqs:DeleteMessage"
+              - "sqs:GetQueueAttributes"
+            Resource: !GetAtt OrderProcessorDLQ.Arn
       DeadLetterQueue:
         Type: SQS
         TargetArn: !GetAtt OrderProcessorDLQ.Arn
@@ -142,8 +162,11 @@ Resources:
         Variables:
           SNS_TOPIC_ARN: !Ref OrderNotificationTopic
       Policies:
-        - SNSPublishMessagePolicy:
-            TopicName: !Ref OrderNotificationTopic
+        - Statement:
+            Effect: Allow
+            Action:
+              - "sns:Publish"
+            Resource: !Ref OrderNotificationTopic
 
   # SNS Topic for Notifications
   OrderNotificationTopic:
