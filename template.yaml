@@ -82,7 +82,7 @@ Resources:
     Properties:
       Handler: order_validation.lambda_handler
       Runtime: python3.9
-      CodeUri: ./src
+      CodeUri: ./src/order_validation.py
       MemorySize: 128
       Timeout: 15
       Environment:
@@ -126,7 +126,7 @@ Resources:
     Properties:
       Handler: inventory_handler.lambda_handler
       Runtime: python3.9
-      CodeUri: ./src
+      CodeUri: ./src/inventory_handler.py
       MemorySize: 128
       Timeout: 15
       Environment:
@@ -164,18 +164,18 @@ Resources:
 
   # EventBridge Rule to Trigger Order Completion Lambda
   InventoryCheckCompletedRule:
-  Type: AWS::Events::Rule
-  Properties:
-    Name: InventoryCheckCompletedRule
-    EventBusName: !Ref OrderEventBus
-    EventPattern:
-      source:
-        - "com.ordersystem.order"
-      detail-type:
-        - "InventoryCheckCompleted"
-    Targets:
-      - Arn: !GetAtt OrderCompletionFunction.Arn
-        Id: "OrderCompletionFunctionTarget"
+    Type: AWS::Events::Rule
+    Properties:
+      Name: InventoryCheckCompletedRule
+      EventBusName: !Ref OrderEventBus
+      EventPattern:
+        source:
+          - "com.ordersystem.order"
+        detail-type:
+          - "InventoryCheckCompleted"
+      Targets:
+        - Arn: !GetAtt OrderCompletionFunction.Arn
+          Id: "OrderCompletionFunctionTarget"
 
   # Lambda: Order Completion
   OrderCompletionFunction:
@@ -183,7 +183,7 @@ Resources:
     Properties:
       Handler: completion_handler.lambda_handler
       Runtime: python3.9
-      CodeUri: ./src
+      CodeUri: ./src/completion_handler.py
       MemorySize: 128
       Timeout: 15
       Environment:
@@ -205,7 +205,7 @@ Resources:
     Properties:
       Handler: notification_handler.lambda_handler
       Runtime: python3.9
-      CodeUri: ./src
+      CodeUri: ./src/notification_handler.py
       MemorySize: 128
       Timeout: 10
       Environment:
