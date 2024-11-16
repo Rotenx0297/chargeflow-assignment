@@ -1,19 +1,19 @@
 name: Deploy SAM Stack
 
 on:
-  # push:
-  #   branches:
-  #     - main
-  workflow_dispatch:
-    inputs:
-      aws-region:
-        description: 'The AWS region'
-        required: true
-        default: 'us-east-1'
-      s3-bucket:
-        description: 'The S3 bucket to upload files'
-        required: true
-        default: 'rotenx'
+  push:
+    branches:
+      - main
+  # workflow_dispatch:
+  #   inputs:
+  #     aws-region:
+  #       description: 'The AWS region'
+  #       required: true
+  #       default: 'us-east-1'
+  #     s3-bucket:
+  #       description: 'The S3 bucket to upload files'
+  #       required: true
+  #       default: 'rotenx'
 jobs:
   deploy:
     name: Deploy SAM Stack to AWS
@@ -38,7 +38,7 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ inputs.aws-region }}
+        aws-region: ${{ vars.aws_region }}
 
     - name: Install SAM CLI
       run: |
@@ -59,6 +59,6 @@ jobs:
 
     - name: Deploy SAM Stack
       run: |
-        sam deploy --s3-bucket ${{ inputs.s3-bucket }} --no-confirm-changeset --no-fail-on-empty-changeset --stack-name OrderProcessingStack \
+        sam deploy --s3-bucket ${{ vars.s3_bucket }} --no-confirm-changeset --no-fail-on-empty-changeset --stack-name OrderProcessingStack \
           --capabilities CAPABILITY_NAMED_IAM \
           --region ${{ inputs.aws-region }}
