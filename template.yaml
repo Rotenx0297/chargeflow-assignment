@@ -213,15 +213,16 @@ Resources:
             Action:
               - "sns:Publish"
             Resource: !Ref OrderNotificationTopic
-      EventBridgeEvent:
-        Type: EventBridgeRule
-        Properties:
-          Pattern:
-            source:
-              - "com.ordersystem.order"
-            detail-type:
-              - "OrderCompleted"
-          EventBusName: !Ref OrderEventBus
+      Events:
+        EventBridgeEvent:
+          Type: EventBridgeRule
+          Properties:
+            Pattern:
+              source:
+                - "com.ordersystem.order"
+              detail-type:
+                - "OrderCompleted"
+            EventBusName: !Ref OrderEventBus
 
   # SNS Topic for Notifications
   OrderNotificationTopic:
