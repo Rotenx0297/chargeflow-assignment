@@ -25,18 +25,17 @@ def lambda_handler(event, context):
                 ExpressionAttributeValues={':status': 'IN_PROCESS'}
             )
             print(f"Order ID: {order_id} was updated in DDB with status: IN_PROCESS")
-            # Log valid processing to EventBridge
             eventbridge.put_events(
                 Entries=[
-                    {'Source': 'com.ordersystem.order', 'DetailType': 'InventorySuccess', 'Detail': json.dumps({'OrderId': order_id}), 'EventBusName': os.environ['EVENT_BUS_NAME']}
+                    {'Source': 'com.ordersystem.order', 'DetailType': 'InventorySuccess', 'Detail': json.dumps(body), 'EventBusName': os.environ['EVENT_BUS_NAME']}
                 ]
             )
         else:
-            # sqs.send_message(
-            #     QueueUrl=os.environ['INVALID_ORDER_PROCESSOR_DLQ'],
-            #     MessageBody=json.dumps({'error': 'Invalid order processing', 'details': body})
-            # )
-            # Log invalid processing to EventBridge
+            # Log invalid processing to DLQ
+            sqs.send_message(
+                QueueUrl=os.environ['INVALID_ORDER_PROCESSOR_DLQ'],
+                MessageBody=json.dumps({'error': 'Invalid order processing', 'details': body})
+            )
             eventbridge.put_events(
                 Entries=[
                     {'Source': 'com.ordersystem.order', 'DetailType': 'InventoryFailure', 'Detail': json.dumps({'OrderId': order_id}), 'EventBusName': os.environ['EVENT_BUS_NAME']}
