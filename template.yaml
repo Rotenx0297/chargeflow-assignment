@@ -71,10 +71,10 @@ Resources:
     Properties:
       QueueName: OrderValidationDLQ
 
-  OrderProcessorDLQ:
-    Type: AWS::SQS::Queue
-    Properties:
-      QueueName: OrderProcessorDLQ
+  # OrderProcessorDLQ:
+  #   Type: AWS::SQS::Queue
+  #   Properties:
+  #     QueueName: OrderProcessorDLQ
 
   # Lambda: Order Validation
   OrderValidationFunction:
@@ -133,7 +133,7 @@ Resources:
         Variables:
           DYNAMODB_TABLE: !Ref OrderStatusTable
           EVENT_BUS_NAME: !Ref OrderEventBus
-          INVALID_ORDER_PROCESSOR_DLQ: !Ref OrderProcessorDLQ
+          # INVALID_ORDER_PROCESSOR_DLQ: !Ref OrderProcessorDLQ
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref OrderStatusTable
@@ -148,14 +148,14 @@ Resources:
               - "sqs:ReceiveMessage"
               - "sqs:GetQueueAttributes"
             Resource: !GetAtt ValidOrderQueue.Arn
-        - Statement:
-            Effect: Allow
-            Action:
-              - "sqs:SendMessage"
-            Resource: !GetAtt OrderProcessorDLQ.Arn
-      DeadLetterQueue:
-        Type: SQS
-        TargetArn: !GetAtt OrderProcessorDLQ.Arn
+      #   - Statement:
+      #       Effect: Allow
+      #       Action:
+      #         - "sqs:SendMessage"
+      #       Resource: !GetAtt OrderProcessorDLQ.Arn
+      # DeadLetterQueue:
+      #   Type: SQS
+      #   TargetArn: !GetAtt OrderProcessorDLQ.Arn
       Events:
         SQSQueue:
           Type: SQS
@@ -213,6 +213,15 @@ Resources:
             Action:
               - "sns:Publish"
             Resource: !Ref OrderNotificationTopic
+      EventBridgeEvent:
+        Type: EventBridgeRule
+        Properties:
+          Pattern:
+            source:
+              - "com.ordersystem.order"
+            detail-type:
+              - "OrderCompleted"
+          EventBusName: !Ref OrderEventBus
 
   # SNS Topic for Notifications
   OrderNotificationTopic:

@@ -17,8 +17,9 @@ def lambda_handler(event, context):
             UpdateExpression="SET OrderStatus = :status",
             ExpressionAttributeValues={':status': 'COMPLETED'}
         )
+        # Log valid processing to EventBridge
         eventbridge.put_events(
             Entries=[
-                {'Source': 'custom.order', 'DetailType': 'OrderCompleted', 'Detail': json.dumps({'OrderId': order_id, 'status': 'COMPLETED'})}
+                {'Source': 'custom.order', 'DetailType': 'OrderCompleted', 'Detail': json.dumps({'OrderId': order_id, 'Status': 'COMPLETED'}), 'EventBusName': os.environ['EVENT_BUS_NAME']}
             ]
         )

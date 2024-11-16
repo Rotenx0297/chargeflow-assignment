@@ -6,9 +6,9 @@ sns = boto3.client('sns')
 
 def lambda_handler(event, context):
     for record in event['Records']:
-        detail = record['detail']
-        order_id = detail['order_id']
-        status = detail['status']
+        detail = record['Detail']
+        order_id = detail['OrderId']
+        status = detail['Status']
 
         sns.publish(
             TopicArn=os.environ['SNS_TOPIC_ARN'],
