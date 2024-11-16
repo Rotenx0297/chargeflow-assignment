@@ -11,8 +11,8 @@ def lambda_handler(event, context):
 
     for record in event['Records']:
         body = json.loads(record['body'])
-        order_id = body['order_id']
-        items = body['items']
+        order_id = body['OrderId']
+        items = body['Items']
         
         inventory_available = all(random.choice([True, False]) for _ in items)
 
@@ -24,7 +24,7 @@ def lambda_handler(event, context):
             )
             eventbridge.put_events(
                 Entries=[
-                    {'Source': 'com.ordersystem.order', 'DetailType': 'InventorySuccess', 'Detail': json.dumps({'order_id': order_id})}
+                    {'Source': 'com.ordersystem.order', 'DetailType': 'InventorySuccess', 'Detail': json.dumps({'OrderId': order_id})}
                 ]
             )
         else:

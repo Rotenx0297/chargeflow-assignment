@@ -6,10 +6,12 @@ sqs = boto3.client('sqs')
 eventbridge = boto3.client('events')
 
 def lambda_handler(event, context):
-    body = json.loads(event['body'])
-    order_id = body.get('order_id')
-    customer_name = body.get('customer_name')
-    items = body.get('items')
+    print(event)
+    body = event['detail']
+    order_id = body.get('OrderId')
+    customer_name = body.get('CustomerName')
+    items = body.get('Items')
+    print(f"Order ID: {order_id}, Customer: {customer_name}, Items: {items}")
 
     if order_id and customer_name and items:
         # Send valid order to SQS
@@ -17,13 +19,14 @@ def lambda_handler(event, context):
             QueueUrl=os.environ['VALID_ORDER_QUEUE'],
             MessageBody=json.dumps(body)
         )
+        print(f"Order ID: {order_id} was sent to validation sqs with content: {body}")
         # Publish validated event to EventBridge
         eventbridge.put_events(
             Entries=[
                 {
                     'Source': 'com.ordersystem.order',
                     'DetailType': 'OrderValidated',
-                    'Detail': json.dumps({'order_id': order_id}),
+                    'Detail': json.dumps({'OrderId': order_id}),
                     'EventBusName': os.environ['EVENT_BUS_NAME']
                 }
             ]

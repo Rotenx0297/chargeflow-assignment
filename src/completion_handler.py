@@ -10,7 +10,7 @@ def lambda_handler(event, context):
 
     for record in event['Records']:
         detail = record['detail']
-        order_id = detail['order_id']
+        order_id = detail['OrderId']
 
         table.update_item(
             Key={'OrderId': order_id},
@@ -19,6 +19,6 @@ def lambda_handler(event, context):
         )
         eventbridge.put_events(
             Entries=[
-                {'Source': 'custom.order', 'DetailType': 'OrderCompleted', 'Detail': json.dumps({'order_id': order_id, 'status': 'COMPLETED'})}
+                {'Source': 'custom.order', 'DetailType': 'OrderCompleted', 'Detail': json.dumps({'OrderId': order_id, 'status': 'COMPLETED'})}
             ]
         )
