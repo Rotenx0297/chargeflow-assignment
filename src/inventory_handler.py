@@ -13,6 +13,7 @@ def lambda_handler(event, context):
     for record in event['Records']:
         body = json.loads(record['body'])
         order_id = body['OrderId']
+        customer_name = body['CustomerName']
         items = body['Items']
         
         inventory_available = True # For testing
@@ -21,8 +22,11 @@ def lambda_handler(event, context):
         if inventory_available:
             table.update_item(
                 Key={'OrderId': order_id},
-                UpdateExpression="SET OrderStatus = :status",
-                ExpressionAttributeValues={':status': 'IN_PROCESS'}
+                UpdateExpression="SET OrderStatus = :status, CustomerName = :customer_name",
+                ExpressionAttributeValues={
+                    ':status': 'IN_PROCESS',
+                    ':customer_name': customer_name
+                }
             )
             print(f"Order ID: {order_id} was updated in DDB with status: IN_PROCESS")
             eventbridge.put_events(
