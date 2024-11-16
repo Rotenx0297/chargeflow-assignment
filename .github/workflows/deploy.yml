@@ -28,11 +28,14 @@ jobs:
 
     - name: Install SAM CLI
       run: |
-        sudo apt-get update
-        sudo apt-get install -y unzip
-        curl -LO "https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sam-cli-linux-x86_64.zip"
-        unzip aws-sam-cli-linux-x86_64.zip -d sam-installation
-        sudo ./sam-installation/install
+        if ! sam --version; then
+          curl -LO "https://github.com/aws/aws-sam-cli/releases/latest/download/aws-sam-cli-linux-x86_64.zip"
+          unzip aws-sam-cli-linux-x86_64.zip -d sam-installation
+          sudo ./sam-installation/install
+        else
+          echo "SAM CLI is already installed with current version:"
+          sam --version
+        fi
 
     - name: Build SAM Application
       run: sam build
