@@ -11,6 +11,18 @@ Example:
       curl -X POST -H "Content-Type: application/json" -d '{"orderId": "12345", "customerName": "Rotem Levy", "items": [{"itemId": "shirt", "quantity": 2},{"itemId": "pants", "quantity": 1}]}' https://sp2cadwlal.execute-api.us-east-1.amazonaws.com/Prod/order
     Output will be:
       {"message": "Order created successfully and event sent to EventBridge", "eventId": "77ed022c-a12f-890c-919a-d216c9c291c6"}
+*  The DDB will contain the record:
+        {
+             "OrderId": {
+              "S": "12345"
+             },
+             "CustomerName": {
+              "S": "Rotem Levy"
+             },
+             "OrderStatus": {
+              "S": "COMPLETED"
+             }
+        }
 *  A message will be sent to the email Rotenx0297@gmail.com:
       
       Your order 12345 is now OrderCompleted.
