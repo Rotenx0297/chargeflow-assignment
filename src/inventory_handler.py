@@ -24,7 +24,7 @@ def lambda_handler(event, context):
             )
             eventbridge.put_events(
                 Entries=[
-                    {'Source': 'custom.inventory', 'DetailType': 'InventorySuccess', 'Detail': json.dumps({'order_id': order_id})}
+                    {'Source': 'com.ordersystem.order', 'DetailType': 'InventorySuccess', 'Detail': json.dumps({'order_id': order_id})}
                 ]
             )
         else:

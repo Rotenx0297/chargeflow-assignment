@@ -21,7 +21,7 @@ def lambda_handler(event, context):
         eventbridge.put_events(
             Entries=[
                 {
-                    'Source': 'custom.orders',
+                    'Source': 'com.ordersystem.order',
                     'DetailType': 'OrderValidated',
                     'Detail': json.dumps({'order_id': order_id}),
                     'EventBusName': os.environ['EVENT_BUS_NAME']
