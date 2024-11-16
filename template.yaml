@@ -82,7 +82,7 @@ Resources:
     Properties:
       Handler: order_validation.lambda_handler
       Runtime: python3.9
-      CodeUri: ./src/order_validation.py
+      CodeUri: ./src
       MemorySize: 128
       Timeout: 15
       Environment:
@@ -126,7 +126,7 @@ Resources:
     Properties:
       Handler: inventory_handler.lambda_handler
       Runtime: python3.9
-      CodeUri: ./src/inventory_handler.py
+      CodeUri: ./src
       MemorySize: 128
       Timeout: 15
       Environment:
@@ -183,7 +183,7 @@ Resources:
     Properties:
       Handler: completion_handler.lambda_handler
       Runtime: python3.9
-      CodeUri: ./src/completion_handler.py
+      CodeUri: ./src
       MemorySize: 128
       Timeout: 15
       Environment:
@@ -205,7 +205,7 @@ Resources:
     Properties:
       Handler: notification_handler.lambda_handler
       Runtime: python3.9
-      CodeUri: ./src/notification_handler.py
+      CodeUri: ./src
       MemorySize: 128
       Timeout: 10
       Environment:
