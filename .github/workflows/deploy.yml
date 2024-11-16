@@ -53,9 +53,6 @@ jobs:
     
     - name: Validate SAM Application
       run: sam validate --template template.yaml
-      
-    - name: Clean up previous SAM build artifacts
-      run: rm -rf .aws-sam
 
     - name: Build SAM Application
       run: sam build --debug
