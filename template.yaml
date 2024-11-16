@@ -159,7 +159,7 @@ Resources:
         SQSQueue:
           Type: SQS
           Properties:
-            Queue: !Ref ValidOrderQueue
+            Queue: !GetAtt ValidOrderQueue.Arn
             BatchSize: 1
 
   # EventBridge Rule to Trigger Order Completion Lambda
