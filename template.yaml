@@ -163,21 +163,6 @@ Resources:
             Queue: !GetAtt ValidOrderQueue.Arn
             BatchSize: 1
 
-  # EventBridge Rule to Trigger Order Completion Lambda
-  InventoryCheckCompletedRule:
-    Type: AWS::Events::Rule
-    Properties:
-      Name: InventoryCheckCompletedRule
-      EventBusName: !Ref OrderEventBus
-      EventPattern:
-        source:
-          - "com.ordersystem.order"
-        detail-type:
-          - "InventoryCheckCompleted"
-      Targets:
-        - Arn: !GetAtt OrderCompletionFunction.Arn
-          Id: "OrderCompletionFunctionTarget"
-
   # Lambda: Order Completion
   OrderCompletionFunction:
     Type: AWS::Serverless::Function
@@ -199,6 +184,16 @@ Resources:
             Action:
               - "events:PutEvents"
             Resource: !Sub "arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${OrderEventBus}"
+      Events:
+        EventBridgeEvent:
+          Type: EventBridgeRule
+          Properties:
+            Pattern:
+              source:
+                - "com.ordersystem.order"
+              detail-type:
+                - "InventorySuccess"
+            EventBusName: !Ref OrderEventBus
 
   # Lambda: Notification
   NotificationFunction:
