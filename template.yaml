@@ -133,6 +133,7 @@ Resources:
         Variables:
           DYNAMODB_TABLE: !Ref OrderStatusTable
           EVENT_BUS_NAME: !Ref OrderEventBus
+          INVALID_ORDER_PROCESSOR_DLQ: !Ref OrderProcessorDLQ
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref OrderStatusTable
