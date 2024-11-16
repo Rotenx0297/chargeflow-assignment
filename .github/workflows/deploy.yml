@@ -52,7 +52,7 @@ jobs:
         fi
 
     - name: Build SAM Application
-      run: sam build
+      run: sam build --debug
 
     - name: Deploy SAM Stack
       run: |
