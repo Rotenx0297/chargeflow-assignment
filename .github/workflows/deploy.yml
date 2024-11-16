@@ -61,4 +61,4 @@ jobs:
       run: |
         sam deploy --s3-bucket ${{ vars.s3_bucket }} --no-confirm-changeset --no-fail-on-empty-changeset --stack-name OrderProcessingStack \
           --capabilities CAPABILITY_NAMED_IAM \
-          --region ${{ inputs.aws-region }}
+          --region ${{ vars.aws_region }}
