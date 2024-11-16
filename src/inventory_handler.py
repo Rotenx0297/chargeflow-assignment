@@ -3,6 +3,7 @@ import json
 import boto3
 import random
 
+sqs = boto3.client('sqs')
 dynamodb = boto3.resource('dynamodb')
 eventbridge = boto3.client('events')
 
@@ -15,6 +16,7 @@ def lambda_handler(event, context):
         items = body['Items']
         
         inventory_available = True # For testing
+        # inventory_available = all(random.choice([True, False]) for _ in items)
 
         if inventory_available:
             table.update_item(
@@ -29,4 +31,14 @@ def lambda_handler(event, context):
                 ]
             )
         else:
-            print(f"Inventory unavailable for {order_id}")
+            # Log invalid processing to DLQ
+            sqs.send_message(
+                QueueUrl=os.environ['INVALID_ORDER_PROCESSOR_DLQ'],
+                MessageBody=json.dumps({'error': 'Invalid order processing', 'details': body})
+            )
+            eventbridge.put_events(
+                Entries=[
+                    {'Source': 'com.ordersystem.order', 'DetailType': 'InventoryFailure', 'Detail': json.dumps({'OrderId': order_id}), 'EventBusName': os.environ['EVENT_BUS_NAME']}
+                ]
+            )
+            return {"statusCode": 400, "body": "Invalid order processing"}
