@@ -55,7 +55,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: order_validation.lambda_handler
-      # Runtime: python3.9
+      Runtime: python3.9
       CodeUri: ./src
       MemorySize: 128
       Timeout: 15
@@ -87,7 +87,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: inventory_handler.lambda_handler
-      # Runtime: python3.9
+      Runtime: python3.9
       CodeUri: ./src
       MemorySize: 128
       Timeout: 15
@@ -112,7 +112,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: completion_handler.lambda_handler
-      # Runtime: python3.9
+      Runtime: python3.9
       CodeUri: ./src
       MemorySize: 128
       Timeout: 15
