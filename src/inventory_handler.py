@@ -14,7 +14,7 @@ def lambda_handler(event, context):
         order_id = body['OrderId']
         items = body['Items']
         
-        inventory_available = all(random.choice([True, False]) for _ in items)
+        inventory_available = True # For testing
 
         if inventory_available:
             table.update_item(
@@ -22,9 +22,10 @@ def lambda_handler(event, context):
                 UpdateExpression="SET OrderStatus = :status",
                 ExpressionAttributeValues={':status': 'IN_PROCESS'}
             )
+            print(f"Order ID: {order_id} was updated in DDB with status: IN_PROCESS")
             eventbridge.put_events(
                 Entries=[
-                    {'Source': 'com.ordersystem.order', 'DetailType': 'InventorySuccess', 'Detail': json.dumps({'OrderId': order_id})}
+                    {'Source': 'com.ordersystem.order', 'DetailType': 'InventorySuccess', 'Detail': json.dumps({'OrderId': order_id}), 'EventBusName': os.environ['EVENT_BUS_NAME']}
                 ]
             )
         else:
